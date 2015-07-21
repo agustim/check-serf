@@ -3,47 +3,66 @@
 	<head>
 		<title>Analisis</title>
 		<script src="js/Chart.js"></script>
+    <script src="js/Chart.StackedBar.js"></script>
 		<meta name = "viewport" content = "initial-scale = 1, user-scalable = no">
 		<script src="js/sql.js"></script>
+		<script src="js/bzip2.js"></script>
 		<style>
 			canvas{
 			}
 		</style>
 	</head>
 	<body>
-		<canvas id="canvas" height="450" width="600"></canvas>
+		<div style="width: 50%">
+			<canvas id="canvas" height="450" width="600"></canvas>
+		</div>
   </body>
 </html>
 <script>
+function bin2Array(bin) {
+		'use strict';
+		var i, size = bin.length, ary = [];
+		for (i = 0; i < size; i++) {
+				ary.push(bin.charCodeAt(i) & 0xFF);
+		}
+		return ary;
+}
+function timpstamp2str(ts){
+	var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+	var date = new Date(ts*1000);
+	var day = date.getDate();
+	var month = months[date.getMonth()];
+	var year = date.getFullYear();
+	var hours = date.getHours();
+	var minutes = "0" + date.getMinutes();
+	var seconds = "0" + date.getSeconds();
+	var formattedTime = day + "/" + month + "/" + year + " " + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+	return formattedTime;
+}
 var xhr = new XMLHttpRequest();
-xhr.open('GET', 'db/_neighbours.db', true);
+xhr.open('GET', 'db/neighbours.db.bz2', true);
+//xhr.open('GET', 'db/_neighbours.db', true);
 xhr.responseType = 'arraybuffer';
 
 xhr.onload = function(e) {
   var uInt8Array = new Uint8Array(this.response);
-  var db = new SQL.Database(uInt8Array);
+	var dades = bin2Array(bzip2.simple(bzip2.array(uInt8Array)));
+  var db = new SQL.Database(dades);
   var alive = [];
   var failed = [];
   var label = [];
   var contents = db.exec("select timestamp,status, count(status) from neigh group by timestamp, status;");
-  // contents is now [{columns:['col1','col2',...], values:[[first row], [second row], ...]}]
-  console.log(contents);
+  //console.log(contents);
   values =  contents[0].values
   var l = 0
   for (i in values){
-      console.log(i)
       if (values[i][1] == "alive")
         alive.push(values[i][2]);
       else
         failed.push(values[i][2]);
       if (l !=  values[i][0]) {
-        l =  values[i][0];
-        var date = new Date(l*1000);
-        var hours = date.getHours();
-        var minutes = "0" + date.getMinutes();
-        var seconds = "0" + date.getSeconds();
-        var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-        label.push(formattedTime);
+				l = values[i][0];
+        label.push(timpstamp2str(l));
       }
   }
   var ChartData = {
@@ -51,26 +70,29 @@ xhr.onload = function(e) {
 		datasets : [
 			{
 				fillColor : "rgba (220,220,120,0.5)",
-				strokeColor : "rgba(220,220,120,1)",
+				strokeColor : "rgba(220,220,120,0.5)",
 				pointColor : "rgba(220,220,120,1)",
 				pointStrokeColor : "#fff",
+				label:	'failed',
 				data : failed
 			},
 			{
 				fillColor : "rgba(151,187,205,0.5)",
-				strokeColor : "rgba(151,187,205,1)",
-				pointColor : "rgba(151,187,205,1)",
+				strokeColor : "rgba(151,187,205,0.5)",
+				pointColor : "rgba(151,187,205,0.7)",
 				pointStrokeColor : "#fff",
+				label: 'alive',
 				data : alive
 			}
 		]
 
 	}
 
-	var myLine = new Chart(document.getElementById("canvas").getContext("2d")).Line(ChartData);
-/*new Chart(document.getElementById("canvas").getContext("2d")).Bar(ChartData, {
-    stacked: true
-});*/
-};
+	var ctx = document.getElementById("canvas").getContext("2d");
+	var grafic = new Chart(ctx).StackedBar(ChartData, {
+		multiTooltipTemplate: "<%= value %><%if (datasetLabel){%> <%=datasetLabel%><%}%>",
+		responsive : true
+	});
+}
 xhr.send();
 </script>
