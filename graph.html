@@ -3,7 +3,6 @@
 	<head>
 		<title>Analisis</title>
 		<script src="js/Chart.js"></script>
-    <script src="js/Chart.StackedBar.js"></script>
 		<meta name = "viewport" content = "initial-scale = 1, user-scalable = no">
 		<script src="js/sql.js"></script>
 		<style>
@@ -31,17 +30,13 @@ xhr.onload = function(e) {
   console.log(contents);
   values =  contents[0].values
   var l = 0
-  var stacked_values = [];
   for (i in values){
       console.log(i)
       if (values[i][1] == "alive")
-        stacked_values[0] = values[i][2];
+        alive.push(values[i][2]);
       else
-        stacked_values[1] = values[i][2];
+        failed.push(values[i][2]);
       if (l !=  values[i][0]) {
-        if (l != 0) {
-            alive.push(stacked_values);
-        }
         l =  values[i][0];
         var date = new Date(l*1000);
         var hours = date.getHours();
@@ -50,7 +45,6 @@ xhr.onload = function(e) {
         var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
         label.push(formattedTime);
       }
-      alive.push(stacked_values);
   }
   var ChartData = {
     labels : label,
@@ -73,10 +67,10 @@ xhr.onload = function(e) {
 
 	}
 
-//	var myLine = new Chart(document.getElementById("canvas").getContext("2d")).Line(lineChartData);
-new Chart(document.getElementById("canvas").getContext("2d")).Bar(ChartData, {
+	var myLine = new Chart(document.getElementById("canvas").getContext("2d")).Line(ChartData);
+/*new Chart(document.getElementById("canvas").getContext("2d")).Bar(ChartData, {
     stacked: true
-});
+});*/
 };
 xhr.send();
 </script>
