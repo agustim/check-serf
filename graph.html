@@ -8,12 +8,15 @@
 		<script src="js/sql.js"></script>
 		<script src="js/bzip2.js"></script>
 		<style>
-			canvas{
-			}
+			canvas{ }
+			h1 { text-align: center; }
 		</style>
 	</head>
 	<body>
-		<div style="width: 50%">
+		<div style="width: 60%">
+			<h1 id="IPNode">10.139.40.82</h1>
+		</div>
+		<div style="width: 60%">
 			<canvas id="canvas" height="450" width="600"></canvas>
 		</div>
   </body>
@@ -28,10 +31,9 @@ function bin2Array(bin) {
 		return ary;
 }
 function timpstamp2str(ts){
-	var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 	var date = new Date(ts*1000);
 	var day = date.getDate();
-	var month = months[date.getMonth()];
+	var month = date.getMonth()+1;
 	var year = date.getFullYear();
 	var hours = date.getHours();
 	var minutes = "0" + date.getMinutes();
