@@ -14,7 +14,7 @@
 	</head>
 	<body>
 		<div style="width: 60%">
-			<h1 id="IPNode">10.139.40.82</h1>
+			<h1 id="IPNode"></h1>
 		</div>
 		<div style="width: 60%">
 			<canvas id="canvas" height="450" width="600"></canvas>
@@ -41,6 +41,7 @@ function timpstamp2str(ts){
 	var formattedTime = day + "/" + month + "/" + year + " " + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
 	return formattedTime;
 }
+var db
 var xhr = new XMLHttpRequest();
 xhr.open('GET', 'db/neighbours.db.bz2', true);
 //xhr.open('GET', 'db/_neighbours.db', true);
@@ -49,10 +50,12 @@ xhr.responseType = 'arraybuffer';
 xhr.onload = function(e) {
   var uInt8Array = new Uint8Array(this.response);
 	var dades = bin2Array(bzip2.simple(bzip2.array(uInt8Array)));
-  var db = new SQL.Database(dades);
+  db = new SQL.Database(dades);
   var alive = [];
   var failed = [];
   var label = [];
+  var nodeip = db.exec("select serfnode from neigh limit 1;");
+  document.getElementById("IPNode").innerHTML = nodeip[0].values[0][0]; 
   var contents = db.exec("select timestamp,status, count(status) from neigh group by timestamp, status;");
   //console.log(contents);
   values =  contents[0].values
